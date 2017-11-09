@@ -1,0 +1,14 @@
+{
+    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "baseUrl": {
+        "value": "one accessable uri on internet, such as azure blob"
+    },
+    "sasToken": {
+        "value": "sas token to blob"
+    },
+    "env": {
+        "value": "target environment: {Dev_Test, Daily, Staging, Production}"
+    }
+}
