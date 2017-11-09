@@ -1,0 +1,184 @@
+{
+    "$schema": "http://schema.management.azure.com/schemas/2014-04-01-preview/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "baseUrl": {
+            "type": "string",
+            "metadata": {
+            "description": "Base URL for the reference templates and scripts"
+        }
+    },
+    "sasToken": {
+        "type": "securestring",
+        "metadata": {
+        "description": "SAS Token for the reference templates and scripts"
+    }
+    },
+    "location": {
+      "type": "string",
+      "defaultValue": "eastus2",
+      "allowedValues": [
+        "eastus",
+        "eastus2",
+        "northcentralus",
+        "southcentralus",
+        "westus",
+        "northeurope",
+        "westeurope",
+        "eastasia",
+        "southeastasia",
+        "japaneast",
+        "japanwest",
+        "australiaeast",
+        "australiasoutheast"
+      ],
+      "metadata": {
+        "description": "Deployment location"
+      }
+    },
+    "env": {
+      "type": "string",
+      "defaultValue": "Dev_Test",
+      "allowedValues": ["Dev_Test", "Daily", "Staging", "Production"],
+      "metadata": {
+        "description": "Target Deployment Environment"
+      }
+    },
+    "variables": {
+        "serviceBusNamespaceName": "[replace(concat('LuiServiceBus', replace(toLower(parameters('env')), '_', '')), 'production', '')]",
+        "serviceBusQueueName":"xaxduserlogon_queue",
+        "queueAuthorizationRuleNamelisten":"lui_listen",
+        "queueAuthorizationRuleNamesend":"luistreamanalytics_send",
+        "tags": {
+            "Owner": "min.zhu@citrix.com",
+            "Environment": "[parameters('env')]"
+        },
+        "Dev_Test": {
+            "serviceQueue":{
+                "lockDuration": "PT5M",
+                "maxSizeInMegabytes": "1024",
+                "requiresDuplicateDetection": "false",
+                "requiresSession": "false",
+                "defaultMessageTimeToLive": "P10675199DT2H48M5.4775807S",
+                "deadLetteringOnMessageExpiration": "false",
+                "duplicateDetectionHistoryTimeWindow": "PT10M",
+                "maxDeliveryCount": "10",
+                "autoDeleteOnIdle": "P10675199DT2H48M5.4775807S",
+                "enablePartitioning": "false",
+                "enableExpress": "false"
+            }
+        },
+        "Daily": {
+            "serviceQueue":{
+                "lockDuration": "PT5M",
+                "maxSizeInMegabytes": "1024",
+                "requiresDuplicateDetection": "false",
+                "requiresSession": "false",
+                "defaultMessageTimeToLive": "P10675199DT2H48M5.4775807S",
+                "deadLetteringOnMessageExpiration": "false",
+                "duplicateDetectionHistoryTimeWindow": "PT10M",
+                "maxDeliveryCount": "10",
+                "autoDeleteOnIdle": "P10675199DT2H48M5.4775807S",
+                "enablePartitioning": "false",
+                "enableExpress": "false"
+            }
+        },
+        "Staging": {
+            "serviceQueue":{
+                "lockDuration": "PT5M",
+                "maxSizeInMegabytes": "1024",
+                "requiresDuplicateDetection": "false",
+                "requiresSession": "false",
+                "defaultMessageTimeToLive": "P10675199DT2H48M5.4775807S",
+                "deadLetteringOnMessageExpiration": "false",
+                "duplicateDetectionHistoryTimeWindow": "PT10M",
+                "maxDeliveryCount": "10",
+                "autoDeleteOnIdle": "P10675199DT2H48M5.4775807S",
+                "enablePartitioning": "false",
+                "enableExpress": "false"
+            }
+        },
+        "Production": {
+            "serviceQueue":{
+                "lockDuration": "PT5M",
+                "maxSizeInMegabytes": "1024",
+                "requiresDuplicateDetection": "false",
+                "requiresSession": "false",
+                "defaultMessageTimeToLive": "P10675199DT2H48M5.4775807S",
+                "deadLetteringOnMessageExpiration": "false",
+                "duplicateDetectionHistoryTimeWindow": "PT10M",
+                "maxDeliveryCount": "10",
+                "autoDeleteOnIdle": "P10675199DT2H48M5.4775807S",
+                "enablePartitioning": "false",
+                "enableExpress": "false"
+            }
+        }
+    },
+    "resources": [{
+        "apiVersion": "2017-04-01",
+        "name": "[parameters('serviceBusNamespaceName')]",
+        "type": "Microsoft.ServiceBus/namespaces",
+        "location": "[resourceGroup().location]",
+        "sku": {
+            "name": "Standard",
+            "tier": "Standard"
+        },
+		"properties": {
+
+        },
+        "resources": [
+            {
+                "apiVersion": "2017-04-01",
+                "name": "[variables('serviceBusQueueName')]",
+                "type": "Queues",
+                "dependsOn": [
+                    "[concat('Microsoft.ServiceBus/namespaces/', parameters('serviceBusNamespaceName'))]"
+                ],
+                "properties": {
+    				"lockDuration": "[variables(parameters('env')).serviceQueue.lockDuration]",
+    				"maxSizeInMegabytes": "[variables(parameters('env')).serviceQueue.maxSizeInMegabytes]",
+    				"requiresDuplicateDetection": "[variables(parameters('env')).serviceQueue.requiresDuplicateDetection]",
+    				"requiresSession": "[variables(parameters('env')).serviceQueue.requiresSession]",
+    				"defaultMessageTimeToLive": "[variables(parameters('env')).serviceQueue.defaultMessageTimeToLive]",
+    				"deadLetteringOnMessageExpiration": "[variables(parameters('env')).serviceQueue.deadLetteringOnMessageExpiration]",
+    				"duplicateDetectionHistoryTimeWindow": "[variables(parameters('env')).serviceQueue.duplicateDetectionHistoryTimeWindow]",
+    				"maxDeliveryCount": "[variables(parameters('env')).serviceQueue.maxDeliveryCount]",
+    				"autoDeleteOnIdle": "[variables(parameters('env')).serviceQueue.autoDeleteOnIdle]",
+    				"enablePartitioning": "[variables(parameters('env')).serviceQueue.enablePartitioning]",
+    				"enableExpress": "[variables(parameters('env')).serviceQueue.enableExpress]",
+                },
+                "resources": [
+                {
+                    "apiVersion": "2017-04-01",
+                    "name": "[variables('queueAuthorizationRuleNamelisten')]",
+                    "type": "AuthorizationRules",
+                    "dependsOn": [
+                        "[variables('serviceBusQueueName')]"
+                    ],
+                    "properties": {
+                        "rights": ["Listen"]
+                    }
+                },
+                {
+                    "apiVersion": "2017-04-01",
+                    "name": "[variables('queueAuthorizationRuleNamesend')]",
+                    "type": "AuthorizationRules",
+                    "dependsOn": [
+                        "[variables('serviceBusQueueName')]"
+                    ],
+                    "properties": {
+                        "rights": ["Send"]
+                    }    
+                }],
+            },
+
+        ],
+    }],
+
+    "outputs": {
+        "serviceBusNamespaceName": {
+            "type": "string",
+            "value": "[variables('serviceBusNamespaceName')]"
+        },
+    }
+}
