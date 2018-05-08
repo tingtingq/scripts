@@ -1,0 +1,1 @@
+for i in `cat ../bitssh.txt`;do git clone $i;done
